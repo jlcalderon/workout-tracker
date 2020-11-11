@@ -1,6 +1,22 @@
+const { Mongoose } = require("mongoose");
 const db = require("../models");
+const path = require("path");
 
 module.exports = function(app) {
+    //Create a workout
+    app.post("/api/workouts", ({ body }, res) => {
+        db.Workout.create({
+                day: Date.now()
+            })
+            .then(dbWorkouts => {
+                console.log(dbWorkouts);
+                res.json(dbWorkouts);
+            });
+        /* .catch(({ message }) => {
+            console.log(message);
+        }); */
+    });
+    //Get last workout
     app.get("/api/workouts", (req, res) => {
         db.Workout.find({})
             .then(dbWorkouts => {
@@ -10,56 +26,51 @@ module.exports = function(app) {
                 res.json(err);
             });
     });
-    app.get("/api/exercise", (req, res) => {
-        db.Exercise.find({})
-            .then(dbExercise => {
-                res.json(dbExercise);
-            })
-            .catch(err => {
-                res.json(err);
-            });
+
+    //Add exercise
+    app.post("/api/workouts/:id", (req, res) => {
+        // Create a new object from request body
+        let exercises = req.body;
+        db.Workout.findOneAndUpdate({
+            //Targeting the match id
+            _id: req.params.id
+
+        }, {
+            //Pushing to the exercise column array
+            $push: {
+                exercises: {
+                    type: exercises.type,
+                    name: exercises.name,
+                    duration: exercises.duration,
+                    weight: exercises.weight,
+                    reps: exercises.reps,
+                    sets: exercises.sets
+                }
+            }
+
+        }, { new: true }).then(dbWorkoutPlan => {
+            res.json(dbWorkoutPlan);
+        }).catch(err => {
+            console.log(`There is an error on: ${err}`);
+            res.json(err);
+        });
+    });
+
+    //Get exercise range
+    app.get("/api/workouts/range", (req, res) => {
+        const startDate = new Date().setDate(new Date().getDate());
+        const endDate = new Date().setDate(new Date().getDate() - 7);
+        db.Workout.find({
+            day: {
+                "$gte": startDate,
+                "$lt": endDate
+            }
+        }).then(dbWorkoutRange => {
+            res.json(dbWorkoutRange);
+        }).catch(err => {
+            console.log(`Range query error on: ${err}`);
+            res.json(err);
+        })
     });
 
 }
-
-
-//Code examples of interacting with mongoDB using Mongoose
-/* db.Library.create({ name: "Campus Library" })
-  .then(dbLibrary => {
-    console.log(dbLibrary);
-  })
-  .catch(({message}) => {
-    console.log(message);
-  }); */
-
-/* app.post("/submit", ({body}, res) => {
-  db.Book.create(body)
-    .then(({_id}) => db.Library.findOneAndUpdate({}, { $push: { books: _id } }, { new: true }))
-    .then(dbLibrary => {
-      res.json(dbLibrary);
-    })
-    .catch(err => {
-      res.json(err);
-    });
-}); */
-
-/* app.get("/library", (req, res) => {
-  db.Library.find({})
-    .then(dbLibrary => {
-      res.json(dbLibrary);
-    })
-    .catch(err => {
-      res.json(err);
-    });
-}); */
-
-/* app.get("/populated", (req, res) => {
-  db.Library.find({})
-    .populate("books")
-    .then(dbLibrary => {
-      res.json(dbLibrary);
-    })
-    .catch(err => {
-      res.json(err);
-    });
-}); */
