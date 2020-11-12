@@ -11,10 +11,10 @@ module.exports = function(app) {
             .then(dbWorkouts => {
                 console.log(dbWorkouts);
                 res.json(dbWorkouts);
+            })
+            .catch(({ message }) => {
+                console.log(message);
             });
-        /* .catch(({ message }) => {
-            console.log(message);
-        }); */
     });
     //Get last workout
     app.get("/api/workouts", (req, res) => {
@@ -60,17 +60,14 @@ module.exports = function(app) {
     app.get("/api/workouts/range", (req, res) => {
         const startDate = new Date().setDate(new Date().getDate());
         const endDate = new Date().setDate(new Date().getDate() - 7);
-        db.Workout.find({
-            day: {
-                "$gte": startDate,
-                "$lt": endDate
-            }
-        }).then(dbWorkoutRange => {
-            res.json(dbWorkoutRange);
-        }).catch(err => {
-            console.log(`Range query error on: ${err}`);
-            res.json(err);
-        })
+        db.Workout.find({ day: { $gte: endDate.toString(), $lte: startDate.toString() } })
+            .sort({ day: 1 })
+            .then(dbWorkoutRange => {
+                res.json(dbWorkoutRange);
+            }).catch(err => {
+                console.log(`Range query error on: ${err}`);
+                res.json(err);
+            })
     });
 
 }
