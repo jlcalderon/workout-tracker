@@ -11,7 +11,7 @@
 # Overview
 Application with MongoDB, NodeJS and Express that allow users to keep track of their workout by adding exercises routines to each workout object.
 
-## Licence
+## License
 This is an open source app. This app is cover under the **MIT** licences terms. For more information open this link to see the app licence terms of use [*Licence*](https://opensource.org/licenses/MIT)
 
 ## Contributing
